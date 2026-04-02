@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 const WorkoutLog = () => {
+  const canvasRef = useRef(null);
   const [workouts, setWorkouts] = useState([]);
   const [activity, setActivity] = useState({ type: '', duration: '' });
 
@@ -19,6 +20,33 @@ const WorkoutLog = () => {
       controller.abort();
     };
   }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#e0f2fe';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 18px Inter, sans-serif';
+      ctx.fillText(`Workouts: ${workouts.length}`, 14, 30);
+
+      const barWidth = 42;
+      const gap = 14;
+      workouts.slice(0, 10).forEach((item, index) => {
+        const height = Math.min(120, Number(item.duration) * 2 + 20);
+        ctx.fillStyle = '#2563eb';
+        ctx.fillRect(14 + index * (barWidth + gap), 140 - height, barWidth, height);
+      });
+    };
+
+    draw();
+  }, [workouts]);
 
   const addWorkout = async (e) => {
     e.preventDefault();
@@ -107,6 +135,15 @@ const WorkoutLog = () => {
                 <span className="bg-blue-500 text-[10px] px-2 py-1 rounded-full uppercase font-black">
                   {workouts.length} Total
                 </span>
+              </div>
+
+              <div className="p-4 bg-white border-b border-slate-100">
+                <canvas
+                  ref={canvasRef}
+                  width={600}
+                  height={160}
+                  className="w-full rounded-xl border border-slate-200"
+                />
               </div>
 
               <div className="divide-y divide-slate-100">
